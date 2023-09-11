@@ -64,6 +64,28 @@ func (this *Server) handle(conn net.Conn) {
 	// broadcast online information
 	this.Broadcast("online", client)
 
+	//	receive message
+	go func() {
+		buff := make([]byte, 4096)
+		for {
+			n, err := conn.Read(buff)
+
+			if n == 0 {
+				this.Broadcast("offline", client)
+				return
+			}
+
+			if err != nil {
+				fmt.Printf("read error: ", err)
+				return
+			}
+			msg := string(buff[:n-1])
+
+			this.Broadcast(msg, client)
+
+		}
+	}()
+
 }
 
 func (this *Server) Start() {
